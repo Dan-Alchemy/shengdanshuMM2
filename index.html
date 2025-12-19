@@ -116,48 +116,6 @@
         });
     </script>
 </body>
-<!-- 在<head>标签内添加音频预加载设置 -->
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>宝宝~生日快乐</title>
-    <!-- 新增音频元素 -->
-    <audio id="backgroundMusic" loop preload="auto">
-        <source src="music/戚薇、李俊昊 - 你是对的人.mp3" type="audio/mpeg">
-    </audio>
-</head>
-
-<!-- 在现有<script>标签内添加播放控制逻辑 -->
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // 其他现有代码...
-        
-        const music = document.getElementById('backgroundMusic');
-        const container = document.getElementById('morse-code-container');
-        
-        // 尝试自动播放，失败则监听用户交互后播放
-        function playMusic() {
-            music.play().catch(e => {
-                console.log('自动播放失败，等待用户交互:', e);
-                // 监听任何用户交互后播放
-                container.addEventListener('click', () => {
-                    music.play().catch(err => console.log('播放失败:', err));
-                }, { once: true });
-                
-                // 触摸设备支持
-                container.addEventListener('touchstart', () => {
-                    music.play().catch(err => console.log('播放失败:', err));
-                }, { once: true });
-            });
-        }
-        
-        // 开始播放音乐
-        playMusic();
-        
-        // 其他现有代码...
-        startMorseAnimation();
-    });
-</script>
 
 <!-- 摩斯密码表白器容器 - 初始全屏显示 -->
 <div id="morse-code-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden;">
