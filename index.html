@@ -1,163 +1,31 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <!-- 视口适配：兼容所有设备 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>宝宝~生日快乐</title>
-    
-    <!-- 音频元素：整合代码1和代码2的配置，兼容全端 -->
-    <audio id="backgroundMusic" loop preload="auto" muted playsinline>
-        <!-- 统一音频路径（代码2的目标文件） -->
-        <source src="music/戚薇、李俊昊 - 你是对的人.mp3" type="audio/mpeg">
-        <source src="music/戚薇、李俊昊 - 你是对的人.mp3" type="audio/mp3"> <!-- 降级兼容（代码1特性） -->
-    </audio>
+<!-- 在<head>标签前添加音频元素 -->
+<audio id="backgroundMusic" loop>
+  <source src="music/戚薇、李俊昊 - 你是对的人.mp3" type="audio/mpeg">
+  您的浏览器不支持音频播放
+</audio>
 
-    <!-- 样式整合：保留代码1的交互引导层 + 适配代码2的容器 -->
-    <style>
-        /* 代码2的核心容器：全屏展示，兼容点击/触摸 */
-        #morse-code-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: #fff;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9998;
-            font-size: 18px;
-            color: #333;
-        }
-        /* 代码1的播放按钮：适配全端 */
-        #playBtn {
-            margin-top: 20px;
-            padding: 12px 30px;
-            background: #ff6781;
-            color: #fff;
-            border: none;
-            border-radius: 30px;
-            font-size: 16px;
-            cursor: pointer;
-            /* 手机端触摸优化 */
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-        #playBtn:hover {
-            background: #ff4a6e; /* 电脑端hover效果 */
-        }
-    </style>
-</head>
+<!-- 在现有script标签内的DOMContentLoaded事件中添加播放代码 -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // 新增音乐播放逻辑
+    const music = document.getElementById('backgroundMusic');
+    // 尝试自动播放，处理浏览器自动播放限制
+    music.play().catch(e => {
+        console.log('自动播放被浏览器阻止，需要用户交互后播放:', e);
+        // 备用方案：监听用户点击后播放
+        document.body.addEventListener('click', () => {
+            music.play().catch(err => console.log('播放失败:', err));
+        }, { once: true });
+    });
 
-<body>
-    <!-- 整合代码1的引导层 + 代码2的交互容器 -->
-    <div id="morse-code-container">
-        <div class="guide-text">点击/触摸页面任意位置播放音乐 🎵</div>
-        <button id="playBtn">播放音乐</button>
-    </div>
-
-    <script>
-        // 核心元素获取
-        const music = document.getElementById('backgroundMusic');
-        const container = document.getElementById('morse-code-container');
-        const playBtn = document.getElementById('playBtn');
-        const guideText = container.querySelector('.guide-text');
-
-        // 设备检测：区分手机/电脑/微信/特殊浏览器（整合代码1的检测逻辑）
-        const deviceInfo = {
-            isPC: !/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
-            isMobile: /Android|iPhone|iPad|iPod/i.test(navigator.userAgent),
-            isWechat: /MicroMessenger/i.test(navigator.userAgent),
-            isIOS: /iPhone|iPad|iPod/i.test(navigator.userAgent),
-            isSafari: /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent)
-        };
-
-        // 核心播放函数：整合代码1的playAudio + 代码2的playMusic
-        function playMusic() {
-            // 解除静音（代码1的核心适配）
-            music.muted = false;
-
-            // 代码2的核心逻辑：优先自动播放
-            music.play()
-                .then(() => {
-                    console.log(`音乐播放成功（${deviceInfo.isPC ? '电脑端' : '手机端'}）`);
-                    guideText.textContent = "🎵 生日快乐呀～";
-                    playBtn.style.display = 'none';
-                })
-                .catch(e => {
-                    console.log(`${deviceInfo.isPC ? '电脑端' : '手机端'}自动播放失败：`, e);
-                    
-                    // 差异化提示（代码1的友好提示特性）
-                    if (deviceInfo.isWechat) {
-                        guideText.innerHTML = '请点击按钮播放<br/>（微信需手动触发） 🎵';
-                    } else if (deviceInfo.isIOS && deviceInfo.isSafari) {
-                        guideText.innerHTML = '请点击页面任意位置<br/>并允许Safari音频权限 🎵';
-                    } else if (deviceInfo.isPC) {
-                        guideText.textContent = '电脑端需手动播放 🎵 点击按钮播放';
-                    } else {
-                        guideText.textContent = '点击/触摸任意位置播放音乐 🎵';
-                    }
-
-                    // 代码2的交互监听逻辑：兼容点击/触摸
-                    const triggerPlay = () => {
-                        music.muted = false;
-                        music.play().catch(err => {
-                            console.error('交互后播放失败：', err);
-                            guideText.textContent = "播放失败，请刷新重试 🎵";
-                        });
-                        // 移除监听器避免重复触发（代码2的once特性）
-                        container.removeEventListener('click', triggerPlay);
-                        if (deviceInfo.isMobile) {
-                            container.removeEventListener('touchstart', triggerPlay);
-                        }
-                    };
-
-                    // 电脑端：仅监听点击（代码2原生逻辑）
-                    container.addEventListener('click', triggerPlay, { once: true });
-                    // 手机端：额外监听触摸（代码2的touch支持 + 代码1的交互适配）
-                    if (deviceInfo.isMobile) {
-                        container.addEventListener('touchstart', triggerPlay, { once: true, passive: true });
-                    }
-                });
-        }
-
-        // 初始化逻辑：根据设备差异化适配
-        document.addEventListener('DOMContentLoaded', () => {
-            // 代码1的特殊浏览器适配
-            if (deviceInfo.isIOS && deviceInfo.isSafari) {
-                // iOS Safari激活音频上下文
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                container.addEventListener('touchstart', () => {
-                    if (audioContext.state === 'suspended') audioContext.resume();
-                }, { once: true });
-            }
-
-            if (deviceInfo.isWechat) {
-                // 微信X5内核适配（代码1的核心）
-                music.muted = true;
-                music.play().catch(() => {}); // 预激活音频
-                setTimeout(() => {
-                    music.load(); // 解决微信缓存问题
-                    playMusic();
-                }, 200);
-            } else {
-                // 非微信环境：直接执行代码2的播放逻辑
-                playMusic();
-            }
-
-            // 代码1的兜底按钮：全端通用
-            playBtn.addEventListener('click', playMusic);
-
-            // 保留代码2的原有动画逻辑（如需启用请取消注释）
-            // if (typeof startMorseAnimation === 'function') {
-            //     startMorseAnimation();
-            // }
-        });
-    </script>
-</body>
+    // 以下是原有代码...
+    const heart = document.getElementById('heart');
+    const answerInput = document.getElementById('answer');
+    // ...其余代码保持不变
+});
+</script>
 
 <!-- 摩斯密码表白器容器 - 初始全屏显示 -->
 <div id="morse-code-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden;">
